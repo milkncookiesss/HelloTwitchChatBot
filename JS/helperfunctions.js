@@ -1,39 +1,27 @@
-const tmi = require('tmi.js');
-const opts = {
-  identity: {
-    username: process.env.BOT_USERNAME,
-    password: process.env.OAUTH_TOKEN
-  },
-  channels: [process.env.CHANNEL_NAME]
-};
-const client = new tmi.client(opts);
-
-function rollDice () {
-  const sides = 6;
-  return Math.floor(Math.random() * sides) + 1;
+function rollDice (x) {
+  const sides = x;
+  return Math.floor(Math.random() * x) + 1;
 }
 
-const onMessageHandler = function (target, context, msg, self) {
-  if (self) { return; } // Ignore messages from the bot
-  console.log(target);
-  console.log(context.subscriber);
-  // Remove whitespace from chat message
-  const commandName = msg.trim();
+const dice = (client, target, context, msg, self) => {
+  const num = rollDice(6);
+  client.say(target, `You rolled a ${num}`);
+  console.log(`* Executed ${commandName} command`);
+}
 
-  if (commandName === "!emoteonly") {
-    client.say(target, `/emoteonly`);
-  }
+const gamble = (client, target, context, msg, self) => {
+  const num = rollDice(100);
 
-  // If the command is known, let's execute it
-  if (commandName === '!dice') {
-    const num = rollDice();
-    client.say(target, `You rolled a ${num}`);
-    console.log(`* Executed ${commandName} command`);
+  if (context["display-name"] === 'kitty9o') {
+    client.say(target, `${context["display-name"]} here is your win, you baby. BabyRage`)
+  } else if (num === 1) {
+    client.say(target, `${context["display-name"]} You rolled a ${num}, tough luck.`);
+    client.say(target, `/timeout ${context["display-name"]} 600`)
   } else {
-    console.log(`* Unknown command ${commandName}`);
+    client.say(target, `${context["display-name"]}, You rolled a ${num}, you pass this time.`);
   }
 }
 
 
 
-module.exports = { onMessageHandler };
+module.exports = { dice, gamble };
